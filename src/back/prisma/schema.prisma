@@ -1,0 +1,127 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Rol {
+  ADMINISTRADOR
+  SUPERVISOR
+}
+
+enum EstadoObra {
+  EJECUCION
+  FINALIZADA
+  PAUSADA
+}
+
+enum TipoModificacion {
+  ADICIONAL
+  DEDUCTIVO
+}
+
+enum CategoriaGasto {
+  MANO_OBRA
+  MATERIAL
+  EQUIPO
+  SUBCONTRATO
+  OTROS
+}
+
+model Usuario {
+  id           String            @id @default(uuid())
+  email        String            @unique
+  passwordHash String
+  nombre       String
+  rol          Rol
+  asignaciones AsignacionObra[]
+  gastos       Gasto[]
+  avances      RegistroAvance[]
+}
+
+model Obra {
+  id               String            @id @default(uuid())
+  nombre           String
+  ubicacion        String
+  cliente          String
+  estado           EstadoObra        @default(EJECUCION)
+  activa           Boolean           @default(true)
+  fechaInicio      DateTime
+  fechaFinTeorica  DateTime
+  asignaciones     AsignacionObra[]
+  titulos          Titulo[]
+}
+
+model AsignacionObra {
+  id        String   @id @default(uuid())
+  usuarioId String
+  obraId    String
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  obra      Obra     @relation(fields: [obraId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, obraId])
+}
+
+model Titulo {
+  id     String @id @default(uuid())
+  obraId String
+  nombre String
+  obra   Obra   @relation(fields: [obraId], references: [id], onDelete: Cascade)
+  items  Item[]
+}
+
+model Item {
+  id                 String               @id @default(uuid())
+  tituloId           String
+  nombre             String
+  cantidadTotal      Float
+  unidad             String
+  valorUnitario      Float
+  titulo             Titulo               @relation(fields: [tituloId], references: [id], onDelete: Cascade)
+  modificaciones     AdicionalDeductivo[]
+  gastos             Gasto[]
+  programaciones     ProgramacionSemanal[]
+  avances            RegistroAvance[]
+}
+
+model AdicionalDeductivo {
+  id     String           @id @default(uuid())
+  itemId String
+  tipo   TipoModificacion
+  nombre String
+  monto  Float
+  item   Item             @relation(fields: [itemId], references: [id], onDelete: Cascade)
+}
+
+model Gasto {
+  id          String         @id @default(uuid())
+  itemId      String
+  usuarioId   String
+  descripcion String
+  categoria   CategoriaGasto
+  fecha       DateTime       @default(now())
+  monto       Float
+  item        Item           @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  usuario     Usuario        @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+}
+
+model ProgramacionSemanal {
+  id                 String @id @default(uuid())
+  itemId             String
+  numeroSemana       Int
+  cantidadPlanificada Float
+  item               Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+}
+
+model RegistroAvance {
+  id               String   @id @default(uuid())
+  itemId           String
+  usuarioId        String
+  cantidadAvanzada Float
+  fecha            DateTime @default(now())
+  item             Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  usuario          Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+}
