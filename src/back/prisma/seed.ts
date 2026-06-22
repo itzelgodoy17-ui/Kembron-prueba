@@ -1,4 +1,5 @@
 import { PrismaClient, Rol, EstadoObra, TipoModificacion, CategoriaGasto } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -14,30 +15,33 @@ async function main() {
   await prisma.obra.deleteMany();
   await prisma.usuario.deleteMany();
 
+  const passwordAdmin = await bcrypt.hash('admin123', 10);
+  const passwordSuper = await bcrypt.hash('super123', 10);
+
   console.log('🌱 Creando usuarios de prueba...');
   const admin = await prisma.usuario.create({
-    data: {
-      email: 'admin@kembron.com',
-      nombre: 'Carlos Admin',
-      passwordHash: 'admin123', 
-      rol: Rol.ADMINISTRADOR,
-    },
+  data: {
+    email: 'admin@kembron.com',
+    nombre: 'Carlos Admin',
+    password: passwordAdmin,
+    rol: Rol.ADMIN,
+  },
   });
-
+  
   const supervisor1 = await prisma.usuario.create({
     data: {
       email: 'sup1@kembron.com',
       nombre: 'Juan Supervisor',
-      passwordHash: 'super123',
+      password: passwordSuper,
       rol: Rol.SUPERVISOR,
     },
   });
-
+  
   const supervisor2 = await prisma.usuario.create({
     data: {
       email: 'sup2@kembron.com',
       nombre: 'Ana Supervisora',
-      passwordHash: 'super123',
+      password: passwordSuper,
       rol: Rol.SUPERVISOR,
     },
   });

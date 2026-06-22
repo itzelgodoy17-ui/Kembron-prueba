@@ -8,7 +8,7 @@ generator client {
 }
 
 enum Rol {
-  ADMINISTRADOR
+  ADMIN
   SUPERVISOR
 }
 
@@ -32,14 +32,16 @@ enum CategoriaGasto {
 }
 
 model Usuario {
-  id           String            @id @default(uuid())
-  email        String            @unique
-  passwordHash String
-  nombre       String
-  rol          Rol
-  asignaciones AsignacionObra[]
-  gastos       Gasto[]
-  avances      RegistroAvance[]
+  id          String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  nombre    String
+  rol       Rol      @default(SUPERVISOR)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  asignaciones    AsignacionObra[]
+  gastos          Gasto[]
+  registrosAvance RegistroAvance[]
 }
 
 model Obra {
