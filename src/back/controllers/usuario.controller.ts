@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ObraService } from '../services/obra.service';
+import { prisma } from '../config/prisma';
 
 const obraService = new ObraService();
 
@@ -41,12 +42,37 @@ export async function eliminarUsuario(id: string) {
   }
 }
 
-export async function asignarObra(req: NextRequest) {
+export async function asignarObra(req: Request) {
   try {
     const { usuarioId, obraId } = await req.json();
-    const result = await obraService.asignarObraASupervisor(usuarioId, obraId);
-    return NextResponse.json(result, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: 'Error al asignar obra' }, { status: 500 });
+
+    if (!usuarioId || !obraId) {
+      return NextResponse.json(
+        { error: 'Faltan datos obligatorios (usuarioId u obraId).' },
+        { status: 400 }
+      );
+    }
+
+    const asignacion = await obraService.asignarObraASupervisor(usuarioId, obraId);
+
+    return NextResponse.json(
+      { message: 'Obra asignada correctamente.', asignacion },
+      { status: 200 }
+    );
+
+  } catch (error: any) {
+    console.error('Error capturado en asignarObra:', error);
+
+    if (error.message === 'Este supervisor ya tiene esa obra asignada' || error.code === 'P2002') {
+      return NextResponse.json(
+        { error: 'El supervisor ya tiene esta obra asignada actualmente.' },
+        { status: 409 } 
+      );
+    }
+    
+    return NextResponse.json(
+      { error: 'Error interno al asignar la obra.' },
+      { status: 500 }
+    );
   }
 }

@@ -31,7 +31,7 @@ async function main() {
   const supervisor1 = await prisma.usuario.create({
     data: {
       email: 'sup1@kembron.com',
-      nombre: 'Juan Supervisor',
+      nombre: 'Gaston Supervisor',
       password: passwordSuper,
       rol: Rol.SUPERVISOR,
     },
@@ -40,7 +40,7 @@ async function main() {
   const supervisor2 = await prisma.usuario.create({
     data: {
       email: 'sup2@kembron.com',
-      nombre: 'Ana Supervisora',
+      nombre: 'Franco Supervisor',
       password: passwordSuper,
       rol: Rol.SUPERVISOR,
     },

@@ -5,27 +5,41 @@ const obraService = new ObraService();
 
 export async function getObras() {
   try {
-    const obras = await obraService.obtenerTodasLasObras();
-    return NextResponse.json(obras, { status: 200 });
+    const obras = await obraService.obtenerTodasLasObrasConPresupuesto();
+    
+    const obrasSerializadas = obras.map((obra: any) => ({
+      ...obra,
+      fechaInicio: obra.fechaInicio instanceof Date 
+        ? obra.fechaInicio.toISOString() 
+        : obra.fechaInicio,
+      fechaFinTeorica: obra.fechaFinTeorica instanceof Date 
+        ? obra.fechaFinTeorica.toISOString() 
+        : obra.fechaFinTeorica,
+    }));
+
+    return NextResponse.json(obrasSerializadas, { status: 200 });
   } catch (error) {
+    console.error('ERROR GET OBRAS PRESUPUESTO:', error);
     return NextResponse.json({ error: 'Error al obtener obras' }, { status: 500 });
   }
 }
 
-export async function crearObra(req: NextRequest) {
+export async function crearObra(req: NextRequest, body?: any) {
   try {
-    const body = await req.json();
-    const obra = await obraService.crearObra(body);
+    const data = body || await req.json();
+    console.log('CREAR OBRA DATA:', data);
+    const obra = await obraService.crearObra(data);
     return NextResponse.json(obra, { status: 201 });
   } catch (error) {
+    console.error('ERROR CREAR OBRA:', error);
     return NextResponse.json({ error: 'Error al crear obra' }, { status: 500 });
   }
 }
 
-export async function editarObra(req: NextRequest, id: string) {
+export async function editarObra(req: NextRequest, id: string, body?: any) {
   try {
-    const body = await req.json();
-    const obra = await obraService.editarObra(id, body);
+    const data = body || await req.json();
+    const obra = await obraService.editarObra(id, data);
     return NextResponse.json(obra, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: 'Error al editar obra' }, { status: 500 });
@@ -39,6 +53,12 @@ export async function desactivarObra(id: string) {
   } catch (error) {
     return NextResponse.json({ error: 'Error al desactivar obra' }, { status: 500 });
   }
+}
+
+export async function activarObra(id: string) {
+  const obraService = new ObraService();
+  const obra = await obraService.activarObra(id);
+  return NextResponse.json(obra, { status: 200 });
 }
 
 export async function getObraDetalle(id: string) {
@@ -66,5 +86,14 @@ export async function getGastosObra(id: string) {
     return NextResponse.json(gastos, { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: 'Error al obtener gastos' }, { status: 500 });
+  }
+}
+
+export async function getResumenObra(id: string) {
+  try {
+    const resumen = await obraService.obtenerResumenObra(id);
+    return NextResponse.json(resumen, { status: 200 });
+  } catch (error) {
+    return NextResponse.json({ error: 'Error al obtener resumen' }, { status: 500 });
   }
 }
