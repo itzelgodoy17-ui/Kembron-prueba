@@ -5,11 +5,20 @@ import React from 'react';
 import { Trash2 } from 'lucide-react'; 
 
 type Modificacion = { id: string; tipo: string; nombre: string; monto: number };
-type Gasto = { id: string; descripcion: string; categoria: string; monto: number; fecha: string };
+// 1. ACTUALIZADO: Agregamos el objeto usuario opcional al tipo Gasto
+type Gasto = { 
+  id: string; 
+  descripcion: string; 
+  categoria: string; 
+  monto: number; 
+  fecha: string;
+  usuario?: { nombre: string } | null; 
+};
 type Item = {
   id: string;
   nombre: string;
   cantidadTotal: number;
+  decay?: boolean; // por si acaso
   unidad: string;
   valorUnitario: number;
   modificaciones: Modificacion[];
@@ -116,49 +125,49 @@ export default function TabPresupuesto({ obraId }: { obraId: string }) {
   }
 
   async function crearGasto() {
-  if (
-    !nuevoGasto.itemId || 
-    !nuevoGasto.descripcion?.trim() || 
-    !nuevoGasto.fecha || 
-    !nuevoGasto.categoria || 
-    nuevoGasto.monto <= 0
-  ) {
-    alert('Por favor, completá todos los campos y asegurate de que el monto sea mayor a cero.');
-    return;
-  }
-
-  try {
-    const payloadGasto = {
-      itemId: nuevoGasto.itemId,
-      descripcion: nuevoGasto.descripcion.trim(),
-      categoria: nuevoGasto.categoria,
-      monto: Number(nuevoGasto.monto),
-      fecha: nuevoGasto.fecha,
-    };
-
-    const res = await fetch('/api/gastos', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json', 
-        Authorization: `Bearer ${obtenerToken()}` 
-      },
-      body: JSON.stringify(payloadGasto), 
-    });
-
-    const datos = await res.json();
-    if (!res.ok) {
-      throw new Error(datos.error || 'Error en el servidor al guardar el gasto');
+    if (
+      !nuevoGasto.itemId || 
+      !nuevoGasto.descripcion?.trim() || 
+      !nuevoGasto.fecha || 
+      !nuevoGasto.categoria || 
+      nuevoGasto.monto <= 0
+    ) {
+      alert('Por favor, completá todos los campos y asegurate de que el monto sea mayor a cero.');
+      return;
     }
 
-    setNuevoGasto({ itemId: '', descripcion: '', categoria: 'MATERIAL', monto: 0, fecha: '' });
-    await cargar();
-    alert('¡Gasto registrado con éxito!');
+    try {
+      const payloadGasto = {
+        itemId: nuevoGasto.itemId,
+        descripcion: nuevoGasto.descripcion.trim(),
+        categoria: nuevoGasto.categoria,
+        monto: Number(nuevoGasto.monto),
+        fecha: nuevoGasto.fecha,
+      };
 
-  } catch (error: any) {
-    console.error(error);
-    alert(error.message || 'No se pudo guardar el gasto.');
+      const res = await fetch('/api/gastos', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json', 
+          Authorization: `Bearer ${obtenerToken()}` 
+        },
+        body: JSON.stringify(payloadGasto), 
+      });
+
+      const datos = await res.json();
+      if (!res.ok) {
+        throw new Error(datos.error || 'Error en el servidor al guardar el gasto');
+      }
+
+      setNuevoGasto({ itemId: '', descripcion: '', categoria: 'MATERIAL', monto: 0, fecha: '' });
+      await cargar();
+      alert('¡Gasto registrado con éxito!');
+
+    } catch (error: any) {
+      console.error(error);
+      alert(error.message || 'No se pudo guardar el gasto.');
+    }
   }
-}
 
   const todosLosItems = titulos.flatMap(t => t.items.map(i => ({ ...i, tituloNombre: t.nombre })));
 
@@ -425,6 +434,7 @@ export default function TabPresupuesto({ obraId }: { obraId: string }) {
                   <th className="text-left px-4 py-3 text-gray-600">Ítem</th>
                   <th className="text-left px-4 py-3 text-gray-600">Categoría</th>
                   <th className="text-left px-4 py-3 text-gray-600">Descripción</th>
+                  <th className="text-left px-4 py-3 text-gray-600">Usuario</th> 
                   <th className="text-left px-4 py-3 text-gray-600">Fecha</th>
                   <th className="text-right px-4 py-3 text-gray-600">Monto</th>
                 </tr>
@@ -438,6 +448,9 @@ export default function TabPresupuesto({ obraId }: { obraId: string }) {
                         <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">{gasto.categoria}</span>
                       </td>
                       <td className="px-4 py-2 text-gray-600">{gasto.descripcion}</td>
+                      <td className="px-4 py-2 text-gray-600 font-medium">
+                        {gasto.usuario?.nombre || <span className="text-gray-400 italic text-xs">Sin asignar</span>}
+                      </td>
                       <td className="px-4 py-2 text-gray-400">
                         {gasto.fecha ? new Date(gasto.fecha).toLocaleDateString('es-AR') : '-'}
                       </td>

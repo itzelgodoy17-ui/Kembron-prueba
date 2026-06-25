@@ -407,9 +407,17 @@ export class ObraService {
             items: {
               include: {
                 modificaciones: true,
-                gastos: true,
+                gastos: {
+                  include: {
+                    usuario: { select: { id: true, nombre: true, email: true } }
+                  }
+                },
                 programaciones: true,
-                avances: true,
+                avances: {
+                  include: {
+                    usuario: { select: { id: true, nombre: true, email: true } }
+                  }
+                },
               }
             }
           }
@@ -559,7 +567,11 @@ export class ObraService {
         items: {
           include: {
             programaciones: { orderBy: { numeroSemana: 'asc' } },
-            avances: true,
+            avances: {
+              include: {
+                usuario: { select: { id: true, nombre: true } }
+              }
+            },
           }
         }
       }
