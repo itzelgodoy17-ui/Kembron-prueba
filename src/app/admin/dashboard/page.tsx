@@ -1,16 +1,8 @@
-// admin/dashboard/page.tsx
 'use client';
 import { useEffect, useState } from 'react';
 import { obtenerToken } from '@/app/lib/auth';
-import { 
-  Building2, 
-  BarChart3, 
-  TrendingUp, 
-  DollarSign, 
-  AlertCircle, 
-  FolderGit2,
-  PieChart
-} from 'lucide-react';
+import { Building2, BarChart3, TrendingUp, DollarSign, AlertCircle, FolderGit2, PieChart } from 'lucide-react';
+import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar} from 'recharts';
 
 type ObraMetrica = {
   id: string;
@@ -214,6 +206,33 @@ export default function AdminDashboardPage() {
           })()}
         </div>
       </div>
+
+      {data.obrasDetalle && data.obrasDetalle.length > 0 && (
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-gray-800 tracking-tight">Presupuestado vs. Ejecutado por Obra</h2>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Comparativa entre el presupuesto real y el total gastado por cada proyecto.
+            </p>
+          </div>
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={data.obrasDetalle} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="4 4" stroke="#f1f5f9" vertical={false} />
+              <XAxis dataKey="nombre" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+              <Tooltip
+                contentStyle={{ backgroundColor: '#0f172a', borderRadius: '12px', border: 'none', color: '#fff' }}
+                labelStyle={{ color: '#94a3b8', fontSize: '11px', fontWeight: '600' }}
+                formatter={(value: any) => [`$${Number(value).toLocaleString('es-AR')}`, '']}
+              />
+              <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '15px' }} />
+              <Bar dataKey="presupuestoReal" name="Presupuestado" fill="#6366f1" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="totalGastado" name="Ejecutado" fill="#10b981" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
     </div>
   );
 }

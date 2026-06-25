@@ -52,4 +52,4 @@ La app estará disponible en http://localhost:3000
 
 ## Deploy
 La aplicación está deployada en Vercel:
-[Link de Vercel aquí]
+https://kembron-prueba-t8wr.vercel.app/

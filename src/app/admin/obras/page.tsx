@@ -12,6 +12,8 @@ type Obra = {
   activa: boolean;
   fechaInicio: string;
   fechaFinTeorica: string;
+  presupuestoReal: number;
+  totalGastado: number;
 };
 
 export default function ObrasPage() {
@@ -80,15 +82,30 @@ export default function ObrasPage() {
             className="bg-white border border-slate-200/80 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4"
             onClick={() => router.push(`/admin/obras/${obra.id}`)}
           >
-            <div className="space-y-1">
-              <h2 className="text-lg font-bold text-slate-800 tracking-tight hover:text-slate-900">{obra.nombre}</h2>
-              <p className="text-sm text-slate-500 font-medium">
-                {obra.cliente} <span className="text-slate-300">·</span> {obra.ubicacion}
-              </p>
-              <div className="text-xs text-slate-400 font-medium pt-1">
-                {formatearFecha(obra.fechaInicio)} — {formatearFecha(obra.fechaFinTeorica)}
-              </div>
+            <div className="space-y-1 flex-1">
+            <h2 className="text-lg font-bold text-slate-800 tracking-tight">{obra.nombre}</h2>
+            <p className="text-sm text-slate-500 font-medium">
+              {obra.cliente} <span className="text-slate-300">·</span> {obra.ubicacion}
+            </p>
+            <div className="text-xs text-slate-400 font-medium pt-1">
+              {formatearFecha(obra.fechaInicio)} — {formatearFecha(obra.fechaFinTeorica)}
             </div>
+          
+            {obra.presupuestoReal > 0 && (
+              <div className="pt-2 space-y-1">
+                <div className="flex justify-between text-xs text-slate-400">
+                  <span>Ejecución económica</span>
+                  <span>{Math.min(100, Math.round((obra.totalGastado / obra.presupuestoReal) * 100))}%</span>
+                </div>
+                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-1.5 bg-blue-500 rounded-full transition-all"
+                    style={{ width: `${Math.min(100, (obra.totalGastado / obra.presupuestoReal) * 100)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
 
             <div className="flex gap-2 items-center self-start md:self-center">
               <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ring-1 ${estadoColor[obra.estado]}`}>

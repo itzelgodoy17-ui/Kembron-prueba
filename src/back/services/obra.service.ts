@@ -30,6 +30,12 @@ export class ObraService {
     presupuestoRealGlobal: number;
     totalGastadoGlobal: number;
     desvioGlobal: number;
+    obrasDetalle: { 
+      id: string;
+      nombre: string;
+      presupuestoReal: number;
+      totalGastado: number;
+    }[];
   }> {
     const obras = await prisma.obra.findMany({
       include: {
@@ -75,6 +81,33 @@ export class ObraService {
       }
     }
 
+    const obrasDetalle = obras.map(obra => {
+      let presupuestoReal = 0;
+      let totalGastado = 0;
+
+      for (const titulo of obra.titulos) {
+        for (const item of titulo.items) {
+          const teorico = item.cantidadTotal * item.valorUnitario;
+          const adicionales = item.modificaciones
+            .filter(m => m.tipo === 'ADICIONAL')
+            .reduce((sum: number, m) => sum + m.monto, 0);
+          const deductivos = item.modificaciones
+            .filter(m => m.tipo === 'DEDUCTIVO')
+            .reduce((sum: number, m) => sum + m.monto, 0);
+          
+          presupuestoReal += (teorico + adicionales - deductivos);
+          totalGastado += item.gastos.reduce((sum: number, g) => sum + g.monto, 0);
+        }
+      }
+
+      return {
+        id: obra.id,
+        nombre: obra.nombre,
+        presupuestoReal,
+        totalGastado,
+      };
+    });
+
     return {
       totalObras,
       obrasActivas,
@@ -82,7 +115,8 @@ export class ObraService {
       presupuestoTeoricoGlobal,
       presupuestoRealGlobal,
       totalGastadoGlobal,
-      desvioGlobal: presupuestoRealGlobal - totalGastadoGlobal
+      desvioGlobal: presupuestoRealGlobal - totalGastadoGlobal,
+      obrasDetalle,
     };
   }
 
